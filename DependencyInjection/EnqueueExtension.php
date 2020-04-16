@@ -181,18 +181,39 @@ final class EnqueueExtension extends Extension implements PrependExtensionInterf
             if (!empty($config['dbal'])) {
                 $rc = new \ReflectionClass(Job::class);
                 $jobQueueRootDir = dirname($rc->getFileName());
-                $container->prependExtensionConfig('doctrine', [
-                    'orm' => [
-                        'mappings' => [
-                            'enqueue_job_queue' => [
-                                'is_bundle' => false,
-                                'type' => 'xml',
-                                'dir' => $jobQueueRootDir.'/Doctrine/mapping',
-                                'prefix' => 'Enqueue\JobQueue\Doctrine\Entity',
+                $entityManagerName = $container->getParameter('enqueue.job.entity_manager_name');
+
+                if ($entityManagerName !== null) {
+                    $container->prependExtensionConfig('doctrine', [
+                        'orm' => [
+                            'entity_managers' => [
+                                $entityManagerName => [
+                                    'mappings' => [
+                                        'enqueue_job_queue' => [
+                                            'is_bundle' => false,
+                                            'type' => 'xml',
+                                            'dir' => $jobQueueRootDir.'/Doctrine/mapping',
+                                            'prefix' => 'Enqueue\JobQueue\Doctrine\Entity',
+                                        ],
+                                    ],
+                                ]
+                            ]
+                        ],
+                    ]);
+                } else {
+                    $container->prependExtensionConfig('doctrine', [
+                        'orm' => [
+                            'mappings' => [
+                                'enqueue_job_queue' => [
+                                    'is_bundle' => false,
+                                    'type' => 'xml',
+                                    'dir' => $jobQueueRootDir.'/Doctrine/mapping',
+                                    'prefix' => 'Enqueue\JobQueue\Doctrine\Entity',
+                                ],
                             ],
                         ],
-                    ],
-                ]);
+                    ]);
+                }
                 break;
             }
         }
